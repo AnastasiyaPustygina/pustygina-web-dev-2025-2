@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ post.title }} - My Blog</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+          integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='post-style.css') }}">
+</head>
+<body>
+<div class="container">
+    <div class="post-container">
+        <h1>{{ post.title }}</h1>
+        <div class="sub-text">
+            Опубликовано {{ post.date.strftime('%d.%m.%Y') }}.
+            Автор: {{ post.author }}
+            ID: {{ post.id }}
+        </div>
+        <img class="card-img-top" src="{{ url_for('static', filename='images/' + post.image_id) }}"
+             alt="Card image cap">
+        <p>{{ post.text }}</p>
+
+        <div class="comment-section">
+            <h3>Оставить комментарий</h3>
+            <form id="comment-form" onsubmit="submitComment(event, {{ post.id }})">
+                <div class="form-group">
+                    <textarea class="form-control" id="comment-text" name="comment_text" rows="3" placeholder="Ваш комментарий..."></textarea>
+                </div>
+                <input type="hidden" id="post-id" name="post_id" value="{{ post.id }}">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-comment"></i> Отправить</button>
+            </form>
+
+            <hr>
+
+            <h3>Комментарии</h3>
+            <div id="comments-container">
+                {% for comment in comments %}
+    <div class="comment" id="comment-{{ comment.id }}">
+        <div class="comment-author">{{ comment.author }} <span class="comment-date">{{ comment.date.strftime('%d.%m.%Y') }}</span></div>
+        <div class="comment-text">{{ comment.text }}</div>
+
+        <form class="reply-form" onsubmit="submitReply(event, {{ comment.id }}, {{ post.id }})">
+            <div class="form-group">
+                <textarea class="form-control" name="reply_text" rows="2" placeholder="Ответить"></textarea>
+            </div>
+            <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-reply"></i> Ответить</button>
+        </form>
+
+        {% if comment.replies %}
+            {% for reply in comment.replies %}
+                <div class="comment" style="margin-left: 30px;">
+                    <div class="comment-author">{{ reply.author }} <span class="comment-date">{{ reply.date.strftime('%d.%m.%Y') }}</span></div>
+                    <div class="comment-text">{{ reply.text }}</div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+{% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script> <!-- Используйте полную версию jQuery -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+function submitComment(event, postId) {
+    event.preventDefault();
+
+    let commentText = document.getElementById("comment-text").value;
+    if (!commentText) {
+        alert('Пожалуйста, введите комментарий!');
+        return;
+    }
+
+    fetch(`/comment/${postId}`, {
+        method: 'POST',
+        body: new URLSearchParams({
+            comment_text: commentText
+        }),
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.html) {
+            // Обновляем весь список комментариев
+            document.getElementById("comments-container").innerHTML = data.html;
+            document.getElementById("comment-text").value = '';  // Очистка поля ввода
+        } else {
+            alert('Ошибка при добавлении комментария');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+
+function submitReply(event, commentId, postId) {
+    event.preventDefault();
+
+    let replyText = event.target.querySelector('textarea[name="reply_text"]').value;
+    if (!replyText) {
+        alert('Пожалуйста, введите ответ!');
+        return;
+    }
+
+    fetch(`/reply/${postId}/${commentId}`, {
+        method: 'POST',
+        body: new URLSearchParams({
+            reply_text: replyText
+        }),
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.html) {
+            document.getElementById("comments-container").innerHTML = data.html;
+        } else {
+            alert('Ошибка при добавлении ответа');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+</script>
+</body>
+{% endblock %}

@@ -1,0 +1,20 @@
+<div class="comment">
+    <div class="comment-author">{{ comment.author }} <span class="comment-date">{{ comment.date }}</span></div>
+    <div class="comment-text">{{ comment.text }}</div>
+
+    <form class="reply-form" onsubmit="submitReply(event, {{ comment.id }}, {{ post.id }})">
+        <div class="form-group">
+            <textarea class="form-control" name="reply_text" rows="2" placeholder="Ответить"></textarea>
+        </div>
+        <button type="submit" class="btn btn-sm btn-secondary"><i class="fas fa-reply"></i> Отправить</button>
+    </form>
+
+    {% if comment.replies %}
+        {% for reply in comment.replies %}
+            <div class="comment" style="margin-left: 30px;">
+                <div class="comment-author">{{ reply.author }} <span class="comment-date">{{ reply.date }}</span></div>
+                <div class="comment-text">{{ reply.text }}</div>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
