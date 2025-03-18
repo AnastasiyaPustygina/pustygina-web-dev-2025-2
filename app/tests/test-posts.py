@@ -41,7 +41,7 @@ def test_posts_page(client):
 
 
 def test_post_page(client):
-    response = client.get(url_for('post'))
+    response = client.get(url_for('post', index=0))
     assert response.status_code == 200
     assert b'<!doctype html>' in response.data
     response_text = response.data.decode('utf-8').strip()
