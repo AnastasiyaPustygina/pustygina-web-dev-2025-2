@@ -5,6 +5,8 @@ from faker import Faker
 fake = Faker()
 app = Flask(__name__)
 
+app.config['SERVER_NAME'] = 'pustygina.pythonanywhere.com'
+
 images_ids = [
     '7d4e9175-95ea-4c5f-8be5-92a6b708bb3c',
     '2d2ab7df-cdbc-48a8-a936-35bba702def5',
@@ -48,10 +50,11 @@ def posts():
 
 @app.route('/posts/<int:index>')
 def post(index):
+    # Проверка, чтобы индекс был в пределах доступных постов
     if 0 <= index < len(posts_list):
         p = posts_list[index]
         return render_template('post.html', title=p['title'], post=p, comments=p['comments'])
-    return redirect(url_for('posts'))
+    return redirect(url_for('posts'))  # Если индекс некорректен, перенаправляем на список постов
 
 @app.route('/about')
 def about():
@@ -62,9 +65,11 @@ def add_comment(post_id):
     try:
         comment_text = request.form.get('comment_text')
 
+        # Проверка на пустой комментарий
         if not comment_text:
             return jsonify({'error': 'Комментарий не может быть пустым'}), 400
 
+        # Проверяем, что пост существует
         if 0 <= post_id < len(posts_list):
             new_comment = {
                 'id': random.randint(1, 9999),
@@ -76,6 +81,8 @@ def add_comment(post_id):
             post = next((p for p in posts_list if p['id'] == post_id), None)
             post['comments'].insert(0, new_comment)
 
+
+            # Возвращаем только новый комментарий
             return jsonify({'html': render_template('comments.html', comments=post['comments'], post=post)})
 
         return jsonify({'error': 'Пост не найден'}), 404
@@ -88,10 +95,12 @@ def add_comment(post_id):
 def add_reply(post_id, comment_id):
     post = next((p for p in posts_list if p['id'] == post_id), None)
 
-    if post:
+    if post:  # Проверяем, что пост найден
+        # Теперь ищем комментарий только в найденном посте
         comment = next((c for c in post['comments'] if c['id'] == comment_id), None)
 
-        if comment:
+        if comment:  # Если комментарий найден
+            # Добавляем ответ
             new_reply = {
                 'id': random.randint(1, 9999),
                 'author': 'Аноним',
@@ -100,12 +109,15 @@ def add_reply(post_id, comment_id):
             }
             comment['replies'].append(new_reply)
 
+            # Возвращаем весь список комментариев с обновленным ответом
             return jsonify({
                 'html': render_template('comments.html', comments=post['comments'], post=post)
             })
         else:
+            # Если комментарий не найден
             return jsonify({'error': 'Не найден комментарий с таким ID'}), 404
     else:
+        # Если пост не найден
         return jsonify({'error': 'Не найден пост с таким ID ' + str(post_id)}), 404
 
 if __name__ == '__main__':
