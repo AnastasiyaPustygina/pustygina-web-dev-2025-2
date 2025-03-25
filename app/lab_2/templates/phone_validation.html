@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <title>Валидация телефона</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Проверка номера телефона</h2>
+        <form method="post">
+            <div class="mb-3">
+                <input type="text" name="phone" class="form-control {% if error %}is-invalid{% endif %}" placeholder="Формат: +7 (999) 123-45-67">
+                {% if error %}
+                <div class="invalid-feedback">{{ error }}</div>
+                {% endif %}
+            </div>
+            <button type="submit" class="btn btn-primary">Проверить</button>
+        </form>
+        {% if formatted_number %}
+            <h3>Отформатированный номер: {{ formatted_number }}</h3>
+        {% endif %}
+    </div>
+</body>
+</html>

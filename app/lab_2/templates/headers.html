@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <title>Заголовки запроса</title>
+</head>
+<body>
+    <h2>Заголовки запроса:</h2>
+    <ul>
+        {% for key, value in headers.items() %}
+            <li>{{ key }}: {{ value }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
