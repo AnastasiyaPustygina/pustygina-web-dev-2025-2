@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Главная</title>
+</head>
+<body>
+    <h1>Главная страница</h1>
+    {% if current_user.is_authenticated %}
+        <p>Привет, {{ current_user.id }}! Вы посетили эту страницу {{ session[current_user.id] }} раз(а).</p>
+    {% else %}
+        <p>Вы не вошли в систему.</p>
+    {% endif %}
+
+    <nav>
+        <a href="{{ url_for('index') }}">Главная</a>
+        {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('login') }}">Войти</a>
+        {% else %}
+            <a href="{{ url_for('secret') }}">Секретная страница</a>
+            <a href="{{ url_for('logout') }}">Выйти</a>
+        {% endif %}
+    </nav>
+</body>
+</html>
