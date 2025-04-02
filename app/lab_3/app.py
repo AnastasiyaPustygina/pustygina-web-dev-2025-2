@@ -4,9 +4,10 @@ from flask import render_template, Flask, redirect, url_for, request, flash, ses
 from flask_login import login_user, login_required, logout_user, LoginManager, current_user
 from .models import User
 from .forms import LoginForm
+from .config import Config
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'supersecretkey'
+app.config.from_object(Config)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -30,7 +31,6 @@ def login():
         if User.validate(form.username.data, form.password.data):
             user = User(form.username.data)
             login_user(user, remember=form.remember.data)
-            app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=7)
             flash('Вы успешно вошли!', 'success')
             next_page = request.args.get('next')
             return redirect(next_page or url_for('index'))
